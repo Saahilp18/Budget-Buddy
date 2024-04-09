@@ -15,7 +15,8 @@ class CaponeReader:
             'Gas/Automotive': 'Travel',
             'Healthcare': 'Personal Health',
             'Entertainment': 'Entertainment',
-            'Lodging': 'Travel'
+            'Lodging': 'Travel',
+            'Fee/Interest Charge': 'Misc'
         }
     
     def parseTransactions(self, transactions):
