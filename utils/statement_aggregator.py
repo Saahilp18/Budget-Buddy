@@ -20,7 +20,7 @@ class StatementAggregator:
 
         # Read all statements
         for file in files:
-            statement_path = f'./statements/{file}'
+            statement_path = f'./{dir}/{file}'
             bank, card = file[:-4].split('-')
             transactions = pd.read_csv(statement_path)
 
@@ -49,7 +49,7 @@ class StatementAggregator:
             if not pd.isna(most_recent_date):
                 dates[bank] = most_recent_date
 
-            #os.remove(statement_path)
+            os.remove(statement_path)
 
 
         with open('dates.json', 'w') as json_file:
