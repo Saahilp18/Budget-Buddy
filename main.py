@@ -30,18 +30,27 @@ for i, file in enumerate(files):
     transactions['Transaction Date'] = pd.to_datetime(transactions['Transaction Date']).dt.strftime('%Y-%m-%d')
 
     # Parse the transactions
-    parsed_transactions = ReaderFactory().getReader(bank).parseTransactions(transactions)
+    transactions = ReaderFactory().getReader(bank).parseTransactions(transactions)
+
+    # Allocate the data to the correct JSON file by year-month
+    for date in transactions['Transaction Date'].str[:7].unique():
+        filename = f'./spending/{date}.csv'
+        if os.path.exists(filename):
+            with open(filename, 'a') as f:
+                transactions[transactions['Transaction Date'].str[:7] == date].to_csv(f, header=False, index=False)
+        else:
+            transactions[transactions['Transaction Date'].str[:7] == date].to_csv(filename, index=False)
 
 
-    most_recent_date = parsed_transactions['Transaction Date'].max()
+    # Update the most recent date viewed
+    most_recent_date = transactions['Transaction Date'].max()
     if not pd.isna(most_recent_date):
          dates[bank] = most_recent_date
 
 
 
-    # os.remove(statement_path)
+    os.remove(statement_path)
 
-# aggregated_transactions.sort_values(by='Transaction Date', ascending=False).to_csv('transactions.csv', index=False)
 
 with open('dates.json', 'w') as json_file:
     json.dump(dates, json_file, indent=4)
