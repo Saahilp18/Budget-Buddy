@@ -1,1 +1,5 @@
 *.json
+statements
+*.csv
+spending/*
+__pycache__
