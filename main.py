@@ -10,7 +10,7 @@ if not os.path.exists('dates.json'):
             json.dump({}, file)
 
 with open('dates.json', 'r') as file:
-    dates = defaultdict(lambda: f'{datetime.date.today().year}-01-01',json.load(file))
+    dates = defaultdict(lambda: f'{datetime.date.today().year-1}-01-01',json.load(file))
 
 
 dir = './statements'
@@ -23,11 +23,14 @@ for i, file in enumerate(files):
     statement_path = f'./statements/{file}'
     bank, card = file[:-4].split('-')
     transactions = pd.read_csv(statement_path)
+    
+    # Convert the Transaction date to datetime and format it correctly
+    transactions['Transaction Date'] = pd.to_datetime(transactions['Transaction Date']).dt.strftime('%Y-%m-%d')
 
     # Filter out dates that have already been read
     transactions = transactions[transactions['Transaction Date'] > dates[bank]]
-    # Convert the Transaction date to datetime and format it correctly
-    transactions['Transaction Date'] = pd.to_datetime(transactions['Transaction Date']).dt.strftime('%Y-%m-%d')
+
+    transactions['Card'] = card
 
     # Parse the transactions
     transactions = ReaderFactory().getReader(bank).parseTransactions(transactions)
@@ -41,15 +44,12 @@ for i, file in enumerate(files):
         else:
             transactions[transactions['Transaction Date'].str[:7] == date].to_csv(filename, index=False)
 
-
     # Update the most recent date viewed
     most_recent_date = transactions['Transaction Date'].max()
     if not pd.isna(most_recent_date):
          dates[bank] = most_recent_date
 
-
-
-    os.remove(statement_path)
+    #os.remove(statement_path)
 
 
 with open('dates.json', 'w') as json_file:
