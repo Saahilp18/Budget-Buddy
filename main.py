@@ -14,8 +14,8 @@ if __name__ == "__main__":
     3. Show spending for a range of months
         """
     )
-    choice = int(input("Which would you like?: "))
-    if choice == 1:
-        visualizer.generate_graph(datetime.datetime.now().strftime('%Y-%m'))
-    if choice == 2:
-        visualizer.generate_graphs()
+    # choice = int(input("Which would you like?: "))
+    # if choice == 1:
+    #     visualizer.generate_graph(datetime.datetime.now().strftime('%Y-%m'))
+    # if choice == 2:
+    #     visualizer.generate_graphs()
