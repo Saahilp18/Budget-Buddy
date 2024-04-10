@@ -30,7 +30,7 @@ class StatementAggregator:
             transactions['Transaction Date'] = pd.to_datetime(transactions['Transaction Date']).dt.strftime('%Y-%m-%d')
 
             # Filter out dates that have already been read
-            transactions = transactions[transactions['Transaction Date'] > dates[bank]]
+            transactions = transactions[transactions['Transaction Date'] > dates[card]]
 
             transactions['Card'] = card
 
@@ -49,7 +49,7 @@ class StatementAggregator:
             # Update the most recent date viewed
             most_recent_date = transactions['Transaction Date'].max()
             if not pd.isna(most_recent_date):
-                dates[bank] = most_recent_date
+                dates[card] = most_recent_date
 
             os.remove(statement_path)
 

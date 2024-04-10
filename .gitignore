@@ -1,4 +1,4 @@
-*.json
+dates.json
 statements/*
 *.csv
 __pycache__
