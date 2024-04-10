@@ -10,6 +10,8 @@ class StatementAggregator:
         if not os.path.exists('dates.json'):
             with open('dates.json', 'w') as file:
                 json.dump({}, file)
+        if not os.path.exists('spending'):
+            os.makedirs('spending')
                 
     def read_statements(self):
         with open('dates.json', 'r') as file:
