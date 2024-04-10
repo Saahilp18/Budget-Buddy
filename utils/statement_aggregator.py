@@ -1,21 +1,13 @@
 import os
 import pandas as pd
-import json
-from collections import defaultdict
-import datetime
 from readers.reader_factory import ReaderFactory
 
 class StatementAggregator:
     def __init__(self):
-        if not os.path.exists('dates.json'):
-            with open('dates.json', 'w') as file:
-                json.dump({}, file)
         if not os.path.exists('spending'):
             os.makedirs('spending')
                 
     def read_statements(self):
-        with open('dates.json', 'r') as file:
-            dates = defaultdict(lambda: f'{datetime.date.today().year-1}-01-01',json.load(file))
 
         dir = './statements'
         files = os.listdir(dir)
@@ -29,13 +21,26 @@ class StatementAggregator:
             # Convert the Transaction date to datetime and format it correctly
             transactions['Transaction Date'] = pd.to_datetime(transactions['Transaction Date']).dt.strftime('%Y-%m-%d')
 
-            # Filter out dates that have already been read
-            transactions = transactions[transactions['Transaction Date'] > dates[card]]
-
             transactions['Card'] = card
+
+            # Filter out dates that have already been read
+            unique_dates = pd.to_datetime(transactions['Transaction Date']).dt.strftime('%Y-%m').unique()
+            dfs = [pd.read_csv(f'spending/{date}.csv') for date in unique_dates if os.path.exists(f'spending/{date}.csv')]
+            
 
             # Parse the transactions
             transactions = ReaderFactory().getReader(bank).parseTransactions(transactions)
+
+            if dfs:
+                combined_dfs = pd.concat(dfs, ignore_index=True)
+                # Merge transactions and combined_dfs on all columns
+                merged = pd.merge(transactions, combined_dfs, how='left', indicator=True)
+
+                # Filter out rows present in both DataFrames
+                transactions = merged[merged['_merge'] == 'left_only'].copy()
+
+                # Drop the '_merge' column as it's no longer needed
+                transactions.drop(columns='_merge', inplace=True)
 
             # Allocate the data to the correct JSON file by year-month
             for date in transactions['Transaction Date'].str[:7].unique():
@@ -46,13 +51,5 @@ class StatementAggregator:
                 else:
                     transactions[transactions['Transaction Date'].str[:7] == date].to_csv(filename, index=False)
 
-            # Update the most recent date viewed
-            most_recent_date = transactions['Transaction Date'].max()
-            if not pd.isna(most_recent_date):
-                dates[card] = most_recent_date
-
             os.remove(statement_path)
 
-
-        with open('dates.json', 'w') as json_file:
-            json.dump(dates, json_file, indent=4)
