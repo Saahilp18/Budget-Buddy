@@ -6,7 +6,7 @@ class ChaseReader:
             'Shopping': 'Shopping',
             'nan': 'Misc',
             'Automotive': 'Travel',
-            'Bills & Utilities': "Housing",
+            'Bills & Utilities': "Misc",
             'Education': 'Misc',
             'Entertainment': 'Entertainment',
             'Fees & adjustments': 'Misc',

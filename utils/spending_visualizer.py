@@ -43,29 +43,21 @@ class SpendingVisualizer:
             category_totals, self.budget_df, on="Category", how="left"
         )
         category_totals['Formatted Amount'] = '$' + category_totals['Amount'].round(2).astype(str)
-        # Plot the spending bars
+
         # Create figure
-        budget_diff = [budget - amount for budget, amount in zip(category_totals["Budget"], category_totals["Amount"])]
-       
+        total_spent = category_totals['Amount'].sum()
+
         fig = px.bar(
             category_totals,
             x="Category",
             y="Amount",
-            title="Spending by Category",
-            color_discrete_sequence=["rgba(0, 0, 255, 0.5)"],
-            
+            title=f"Total Amount Spent For This Month: ${total_spent}",
+            color=category_totals["Amount"] < category_totals["Budget"],
+            color_discrete_map={True: "rgba(0, 255, 0, 0.5)", False: "rgba(255, 0, 0, 0.5)"},
             text="Formatted Amount",
         )
 
-        # Update bar text position
         fig.update_traces(textposition="outside")
-
-        # Add budget bars
-        fig.add_bar(
-            x=category_totals["Category"],
-            y=[max(0, diff) for diff in budget_diff],
-            name="Budget Limits",
-        )
         fig.update_layout(showlegend=False)
 
         # Show figure
