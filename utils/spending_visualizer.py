@@ -42,29 +42,33 @@ class SpendingVisualizer:
         category_totals = pd.merge(
             category_totals, self.budget_df, on="Category", how="left"
         )
+        category_totals['Formatted Amount'] = '$' + category_totals['Amount'].round(2).astype(str)
         # Plot the spending bars
+        # Create figure
+        budget_diff = [budget - amount for budget, amount in zip(category_totals["Budget"], category_totals["Amount"])]
+       
         fig = px.bar(
             category_totals,
             x="Category",
             y="Amount",
             title="Spending by Category",
-            color_discrete_sequence=["blue"],
+            color_discrete_sequence=["rgba(0, 0, 255, 0.5)"],
+            
+            text="Formatted Amount",
         )
 
-        # Plot the budget bars
+        # Update bar text position
+        fig.update_traces(textposition="outside")
+
+        # Add budget bars
         fig.add_bar(
             x=category_totals["Category"],
-            y=category_totals["Budget"] - category_totals["Amount"],
-            marker=dict(
-                color="rgba(255, 0, 0, 0.5)"
-            ),  # Adjust transparency by changing the alpha value (0-1)
+            y=[max(0, diff) for diff in budget_diff],
             name="Budget Limits",
         )
+        fig.update_layout(showlegend=False)
 
-        fig.update_layout(title=self.get_plot_name(file), showlegend=False, height=1000)
-        fig.update_yaxes(range=[0, self.budget_df["Budget"].max() + 200], tickmode="linear", tick0=0, dtick=100)
-
-
+        # Show figure
         fig.show()
 
     def get_plot_name(self, file):
