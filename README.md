@@ -14,6 +14,6 @@ A tool that will allow users to track their spending and habits by regularly upl
    python main.py
    ```
 
-## Naming Conventions of supported banks
+## Naming conventions of supported banks
 - Capital One - **capone**
 - Chase - **chase**
