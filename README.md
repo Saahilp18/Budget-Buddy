@@ -3,7 +3,7 @@
 </p>
 
 # Budget Buddy
-People of all ages can use this tool to track their spending and habits by regularly uploading their credit card statements. These statements will be normalized and aggregated to provide a cumulative, month-by-month analysis of spending habits. With this project, I aim to provide a robust, no-cost solution to help users manage their finances and promote responsible spending.
+A tool that will allow users to track their spending and habits by regularly uploading their credit card statements. These statements will be normalized and aggregated to provide a cumulative, month-by-month analysis of spending habits. With this project, I aim to provide a robust, no-cost solution to help users manage their finances and promote responsible spending.
 
 ## How to use:
 1. Download credit/debit card statements
