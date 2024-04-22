@@ -82,4 +82,4 @@ class StatementAggregator:
 
                 blob.upload_from_string(updated_df.to_csv(index=False))
 
-            # os.remove(statement_path)
+            os.remove(statement_path)

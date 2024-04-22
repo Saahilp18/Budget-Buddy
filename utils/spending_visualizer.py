@@ -5,10 +5,14 @@ import plotly.express as px
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 import datetime
+from utils.storage_client import StorageClient
+import io
 
 
 class SpendingVisualizer:
     def __init__(self):
+        self.storage_client = StorageClient()
+
         self.months = {
             "01": "January",
             "02": "February",
@@ -32,20 +36,22 @@ class SpendingVisualizer:
 
     def generate_graph(self, time):
         file = f"{time}.csv"
-        statement_path = f"./spending/{file}"
-        if not os.path.exists(statement_path):
+        blob = self.storage_client.bucket.blob(file)
+        if not blob.exists():
             print("There are no statements for this time period.")
             return
 
-        transactions = pd.read_csv(statement_path)
+        transactions = pd.read_csv(io.BytesIO(blob.download_as_string()))
         category_totals = transactions.groupby("Category")["Amount"].sum().reset_index()
         category_totals = pd.merge(
             category_totals, self.budget_df, on="Category", how="left"
         )
-        category_totals['Formatted Amount'] = '$' + category_totals['Amount'].round(2).astype(str)
+        category_totals["Formatted Amount"] = "$" + category_totals["Amount"].round(
+            2
+        ).astype(str)
 
         # Create figure
-        total_spent = category_totals['Amount'].sum()
+        total_spent = category_totals["Amount"].sum()
 
         fig = px.bar(
             category_totals,
@@ -53,7 +59,10 @@ class SpendingVisualizer:
             y="Amount",
             title=f"Total Amount Spent For This Month: ${total_spent}",
             color=category_totals["Amount"] < category_totals["Budget"],
-            color_discrete_map={True: "rgba(0, 255, 0, 0.5)", False: "rgba(255, 0, 0, 0.5)"},
+            color_discrete_map={
+                True: "rgba(0, 255, 0, 0.5)",
+                False: "rgba(255, 0, 0, 0.5)",
+            },
             text="Formatted Amount",
         )
 
@@ -68,30 +77,27 @@ class SpendingVisualizer:
         return f"{self.months[month]} {year}"
 
     def generate_graphs(self):
-        dir = "./spending"
-        files = os.listdir(dir)
-        files.sort(reverse=True)
+        blobs = list(self.storage_client.bucket.list_blobs())
+        blobs.sort(key=lambda blob: blob.name, reverse=True)
 
         # Create a subplot for all graphs
-
         fig = make_subplots(
-            rows=len(files),
+            rows=len(blobs),
             cols=1,
-            subplot_titles=[self.get_plot_name(file) for file in files],
+            subplot_titles=[self.get_plot_name(blob.name) for blob in blobs],
         )
 
         row = 1  # Initialize subplot row
 
         # Read all statements
-        for file in files:
-            year, month = file[:7].split("-")
+        for blob in blobs:
+            year, month = blob.name[:7].split("-")
             timeframe = f"{self.months[month]} {year}"
-            statement_path = f"./{dir}/{file}"
-            if not os.path.exists(statement_path):
+            if not blob.exists():
                 print("There are no statements for this time period.")
                 return
 
-            transactions = pd.read_csv(statement_path)
+            transactions = pd.read_csv(io.BytesIO(blob.download_as_string()))
             category_totals = (
                 transactions.groupby("Category")["Amount"].sum().reset_index()
             )
@@ -106,7 +112,7 @@ class SpendingVisualizer:
                 row=row,
                 col=1,
             )
-            
+
             # Set x-axis tickvals and ticktext
             fig.update_xaxes(
                 tickvals=list(range(len(category_totals))),
