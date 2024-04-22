@@ -1,17 +1,12 @@
 import os
 import pandas as pd
 from readers.reader_factory import ReaderFactory
-from google.cloud import storage
-from utils.secrets import Secrets
+from utils.storage_client import StorageClient
 import io
 
 class StatementAggregator:
     def __init__(self):
-        Secrets().read_gcp_secrets()
-
-        self.storage_client = storage.Client(project=os.environ["project_id"])
-        self.bucket_name = os.environ["bucket"]
-        self.bucket = self.storage_client.get_bucket(self.bucket_name)
+        self.storage_client = StorageClient()
 
     def read_statements(self):
         dir = "./statements"
@@ -41,7 +36,7 @@ class StatementAggregator:
             # aggregate all relevant dataframes
             for date in unique_dates:
                 file = f"{date}.csv"
-                blob = self.bucket.blob(file)
+                blob = self.storage_client.bucket.blob(file)
                 # if data exists for this date, add it
                 if blob.exists():
                     dfs.append(pd.read_csv(blob.open()))
@@ -77,7 +72,7 @@ class StatementAggregator:
             # Allocate the data to the correct JSON file by year-month
             for date in unique_dates:
                 file_name = f"{date}.csv"
-                blob = self.bucket.blob(file_name)
+                blob = self.storage_client.bucket.blob(file_name)
 
                 existing_df = pd.read_csv(io.BytesIO(blob.download_as_string())) if blob.exists() else pd.DataFrame()
 
