@@ -1,15 +1,19 @@
 import os
 import pandas as pd
 from readers.reader_factory import ReaderFactory
-
+from google.cloud import storage
+from utils.secrets import Secrets
+import io
 
 class StatementAggregator:
     def __init__(self):
-        if not os.path.exists("spending"):
-            os.makedirs("spending")
+        Secrets().read_gcp_secrets()
+
+        self.storage_client = storage.Client(project=os.environ["project_id"])
+        self.bucket_name = os.environ["bucket"]
+        self.bucket = self.storage_client.get_bucket(self.bucket_name)
 
     def read_statements(self):
-
         dir = "./statements"
         files = os.listdir(dir)
 
@@ -32,11 +36,15 @@ class StatementAggregator:
                 .dt.strftime("%Y-%m")
                 .unique()
             )
-            dfs = [
-                pd.read_csv(f"spending/{date}.csv")
-                for date in unique_dates
-                if os.path.exists(f"spending/{date}.csv")
-            ]
+
+            dfs = []
+            # aggregate all relevant dataframes
+            for date in unique_dates:
+                file = f"{date}.csv"
+                blob = self.bucket.blob(file)
+                # if data exists for this date, add it
+                if blob.exists():
+                    dfs.append(pd.read_csv(blob.open()))
 
             # Parse the transactions
             transactions = (
@@ -51,9 +59,13 @@ class StatementAggregator:
                 )
 
                 # Print rows present in both dataframes
-                both_present = merged[merged["_merge"] == "both"].drop(columns=['_merge', 'Card'])
+                both_present = merged[merged["_merge"] == "both"].drop(
+                    columns=["_merge", "Card"]
+                )
                 if not both_present.empty:
-                    print(f"Duplicate transactions that will be omitted for your {card} card:")
+                    print(
+                        f"Duplicate transactions that will be omitted for your {card} card:"
+                    )
                     print(both_present.to_markdown(index=False))
 
                 # Filter out rows present in both DataFrames
@@ -63,16 +75,16 @@ class StatementAggregator:
                 transactions.drop(columns="_merge", inplace=True)
 
             # Allocate the data to the correct JSON file by year-month
-            for date in transactions["Transaction Date"].str[:7].unique():
-                filename = f"./spending/{date}.csv"
-                if os.path.exists(filename):
-                    with open(filename, "a") as f:
-                        transactions[
-                            transactions["Transaction Date"].str[:7] == date
-                        ].to_csv(f, header=False, index=False)
-                else:
-                    transactions[
-                        transactions["Transaction Date"].str[:7] == date
-                    ].to_csv(filename, index=False)
+            for date in unique_dates:
+                file_name = f"{date}.csv"
+                blob = self.bucket.blob(file_name)
 
-            os.remove(statement_path)
+                existing_df = pd.read_csv(io.BytesIO(blob.download_as_string())) if blob.exists() else pd.DataFrame()
+
+                filtered_transactions = transactions[transactions["Transaction Date"].str[:7] == date]
+
+                updated_df = pd.concat([existing_df, filtered_transactions], ignore_index=True)
+
+                blob.upload_from_string(updated_df.to_csv(index=False))
+
+            # os.remove(statement_path)

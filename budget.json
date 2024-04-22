@@ -1,13 +1,12 @@
 {
-    "Eating Out": 500,
-    "Entertainment": 500,
-    "Travel": 500,
+    "Eating Out": 400,
+    "Entertainment": 300,
+    "Travel": 100,
+    "Shopping": 300,
+    "Subscriptions": 200,
+    "Alcohol": 200,
     "Misc": 500,
-    "Phone": 500,
     "Grocery": 500,
-    "Personal Health": 500,
-    "Housing": 500,
-    "Shopping": 500,
-    "Subscriptions": 500,
-    "Alcohol": 500
+    "Personal Health": 300,
+    "Housing": 3000
 }
