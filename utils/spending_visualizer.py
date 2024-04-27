@@ -51,7 +51,7 @@ class SpendingVisualizer:
         ).astype(str)
 
         # Create figure
-        total_spent = category_totals["Amount"].sum()
+        total_spent = round(category_totals["Amount"].sum(), 2)
 
         fig = px.bar(
             category_totals,

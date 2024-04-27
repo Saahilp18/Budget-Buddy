@@ -7,7 +7,7 @@ class CaponeReader:
             'Payment': 'Payment',
             'Dining': 'Eating Out',
             'Merchandise': 'Misc',
-            'Internet': 'Housing',
+            'Internet': 'Home',
             'Airfare': 'Travel',
             'Other Travel': 'Travel',
             'Phone/Cable': 'Phone',

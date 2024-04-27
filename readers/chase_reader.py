@@ -15,7 +15,7 @@ class ChaseReader:
             'Gifts & donations': 'Misc',
             'Groceries': 'Groceries',
             'Health & wellness': "Personal Health",
-            'Home': "Housing",
+            'Home': "Home",
             'Miscellaneous': "Misc",
             'Personal': 'Misc',
             'Professional Services': 'Misc',

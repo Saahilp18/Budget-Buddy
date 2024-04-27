@@ -11,7 +11,9 @@ class StatementAggregator:
     def read_statements(self):
         dir = "./statements"
         files = os.listdir(dir)
-
+        spending_dir = './spending'
+        if not os.path.exists(spending_dir):
+            os.mkdir(spending_dir)
         # Read all statements
         for file in files:
             statement_path = f"./{dir}/{file}"
@@ -69,17 +71,34 @@ class StatementAggregator:
                 # Drop the '_merge' column as it's no longer needed
                 transactions.drop(columns="_merge", inplace=True)
 
-            # Allocate the data to the correct JSON file by year-month
+            # # Allocate the data to the correct JSON file by year-month
             for date in unique_dates:
-                file_name = f"{date}.csv"
-                blob = self.storage_client.bucket.blob(file_name)
-
-                existing_df = pd.read_csv(io.BytesIO(blob.download_as_string())) if blob.exists() else pd.DataFrame()
-
                 filtered_transactions = transactions[transactions["Transaction Date"].str[:7] == date]
-
-                updated_df = pd.concat([existing_df, filtered_transactions], ignore_index=True)
-
-                blob.upload_from_string(updated_df.to_csv(index=False))
-
+                file_path = f'./spending/{date}.csv'
+                if os.path.exists(file_path):
+                    filtered_transactions.to_csv(file_path, mode='a', header=False, index=False)
+                else:
+                    filtered_transactions.to_csv(file_path, index=False)
+        
             os.remove(statement_path)
+
+        
+
+        if os.listdir('./spending'):
+            print("""
+                Finished processing statements! Please adjust the transactions in the spending folder before continuing.
+              """)
+            input("Press enter to continue: ")
+            for file in os.listdir(spending_dir):
+                df = pd.read_csv(spending_dir + '/' + file)
+                os.remove(spending_dir + '/' + file)
+                if df.empty:
+                    continue
+                blob = self.storage_client.bucket.blob(file)
+                existing_df = pd.read_csv(io.BytesIO(blob.download_as_string())) if blob.exists() else pd.DataFrame()
+                updated_df = pd.concat([existing_df, df], ignore_index=True)
+                blob.upload_from_string(updated_df.to_csv(index=False))
+            print("Transactions have been uploaded!")
+        os.rmdir(spending_dir)
+
+            

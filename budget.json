@@ -8,5 +8,7 @@
     "Misc": 500,
     "Grocery": 500,
     "Personal Health": 300,
-    "Housing": 3000
+    "Rent": 2500,
+    "Home": 500,
+    "401k": 2000
 }
