@@ -1,14 +1,13 @@
 import os
 import pandas as pd
 from readers.reader_factory import ReaderFactory
-from utils.storage_client import StorageClient
 import io
 import json
 
 
 class StatementAggregator:
-    def __init__(self):
-        self.storage_client = StorageClient()
+    def __init__(self, storage_client):
+        self.storage_client = storage_client
         with open("budget.json", "r") as f:
             self.budget_categories = json.load(f).keys()
 
@@ -42,7 +41,7 @@ class StatementAggregator:
             # aggregate all relevant dataframes
             for date in unique_dates:
                 file = f"{date}.csv"
-                blob = self.storage_client.bucket.blob(file)
+                blob = self.storage_client.get_blob(file)
                 # if data exists for this date, add it
                 if blob.exists():
                     dfs.append(pd.read_csv(blob.open()))
@@ -103,7 +102,7 @@ Here are the following budget categories:"""
 
             # Check to see if any unrecognized categories still exist
             while os.listdir(spending_dir):
-                input("Press enter to continue:")
+                input("Press enter to continue...")
                 print()
                 for file in os.listdir(spending_dir):
                     df = pd.read_csv(spending_dir + "/" + file)
@@ -116,14 +115,14 @@ Here are the following budget categories:"""
                             f"The following categories for {file[:-4]} are invalid. Please revise them:"
                         )
                         for cat in invalid_categories:
-                            print(f"\t{cat}")
+                            print(f"- {cat}")
                             print()
                         continue
 
                     os.remove(spending_dir + "/" + file)
                     if df.empty:
                         continue
-                    blob = self.storage_client.bucket.blob(file)
+                    blob = self.storage_client.get_blob(file)
                     existing_df = (
                         pd.read_csv(io.BytesIO(blob.download_as_string()))
                         if blob.exists()

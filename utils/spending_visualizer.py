@@ -4,14 +4,12 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
-import datetime
-from utils.storage_client import StorageClient
 import io
 
 
 class SpendingVisualizer:
-    def __init__(self):
-        self.storage_client = StorageClient()
+    def __init__(self, storage_client):
+        self.storage_client = storage_client
 
         self.months = {
             "01": "January",
@@ -36,7 +34,7 @@ class SpendingVisualizer:
 
     def generate_graph(self, time):
         file = f"{time}.csv"
-        blob = self.storage_client.bucket.blob(file)
+        blob = self.storage_client.get_blob(file)
         if not blob.exists():
             print("There are no statements for this time period.")
             return
@@ -77,7 +75,7 @@ class SpendingVisualizer:
         return f"{self.months[month]} {year}"
 
     def generate_graphs(self):
-        blobs = list(self.storage_client.bucket.list_blobs())
+        blobs = self.storage_client.list_blobs()
         blobs.sort(key=lambda blob: blob.name, reverse=True)
 
         # Create a subplot for all graphs
@@ -130,27 +128,6 @@ class SpendingVisualizer:
         # Show the plot
         fig.show()
 
-    def get_dates_in_between(self, start_date_str, end_date_str):
-        start_month, start_year = map(int, start_date_str.split("-"))
-        end_month, end_year = map(int, end_date_str.split("-"))
-
-        start_date = datetime.date(start_year, start_month, 1)
-        end_date = datetime.date(end_year, end_month, 1)
-
-        dates_between = []
-        current_date = start_date
-        while current_date <= end_date:
-            dates_between.append(current_date.strftime("%Y-%m"))
-            if current_date.month == 12:
-                current_date = datetime.date(current_date.year + 1, 1, 1)
-            else:
-                current_date = datetime.date(
-                    current_date.year, current_date.month + 1, 1
-                )
-
-        return dates_between
-
-    def generate_timerange_graphs(self, start, end):
         dates = self.get_dates_in_between(start, end)
 
         # Create a list of dataframes using list comprehension
