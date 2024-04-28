@@ -3,15 +3,19 @@ import pandas as pd
 from readers.reader_factory import ReaderFactory
 from utils.storage_client import StorageClient
 import io
+import json
+
 
 class StatementAggregator:
     def __init__(self):
         self.storage_client = StorageClient()
+        with open("budget.json", "r") as f:
+            self.budget_categories = json.load(f).keys()
 
     def read_statements(self):
         dir = "./statements"
         files = os.listdir(dir)
-        spending_dir = './spending'
+        spending_dir = "./spending"
         if not os.path.exists(spending_dir):
             os.mkdir(spending_dir)
         # Read all statements
@@ -73,32 +77,59 @@ class StatementAggregator:
 
             # # Allocate the data to the correct JSON file by year-month
             for date in unique_dates:
-                filtered_transactions = transactions[transactions["Transaction Date"].str[:7] == date]
-                file_path = f'./spending/{date}.csv'
+                filtered_transactions = transactions[
+                    transactions["Transaction Date"].str[:7] == date
+                ]
+                file_path = f"./spending/{date}.csv"
                 if os.path.exists(file_path):
-                    filtered_transactions.to_csv(file_path, mode='a', header=False, index=False)
+                    filtered_transactions.to_csv(
+                        file_path, mode="a", header=False, index=False
+                    )
                 else:
                     filtered_transactions.to_csv(file_path, index=False)
-        
+
             os.remove(statement_path)
 
-        
+        if os.listdir("./spending"):
+            print(
+                f"""
+Finished processing statements! Please adjust the transactions in the spending folder before continuing.
 
-        if os.listdir('./spending'):
-            print("""
-                Finished processing statements! Please adjust the transactions in the spending folder before continuing.
-              """)
-            input("Press enter to continue: ")
-            for file in os.listdir(spending_dir):
-                df = pd.read_csv(spending_dir + '/' + file)
-                os.remove(spending_dir + '/' + file)
-                if df.empty:
-                    continue
-                blob = self.storage_client.bucket.blob(file)
-                existing_df = pd.read_csv(io.BytesIO(blob.download_as_string())) if blob.exists() else pd.DataFrame()
-                updated_df = pd.concat([existing_df, df], ignore_index=True)
-                blob.upload_from_string(updated_df.to_csv(index=False))
+Here are the following budget categories:"""
+            )
+            for cat in self.budget_categories:
+                print(f"\t{cat}")
+            print()
+
+            # Check to see if any unrecognized categories still exist
+            while os.listdir(spending_dir):
+                input("Press enter to continue:")
+                print()
+                for file in os.listdir(spending_dir):
+                    df = pd.read_csv(spending_dir + "/" + file)
+                    # Check if there are any unrecognized categories in the data
+                    invalid_categories = set(df["Category"]) - set(
+                        self.budget_categories
+                    )
+                    if invalid_categories:
+                        print(
+                            f"The following categories for {file[:-4]} are invalid. Please revise them:"
+                        )
+                        for cat in invalid_categories:
+                            print(f"\t{cat}")
+                            print()
+                        continue
+
+                    os.remove(spending_dir + "/" + file)
+                    if df.empty:
+                        continue
+                    blob = self.storage_client.bucket.blob(file)
+                    existing_df = (
+                        pd.read_csv(io.BytesIO(blob.download_as_string()))
+                        if blob.exists()
+                        else pd.DataFrame()
+                    )
+                    updated_df = pd.concat([existing_df, df], ignore_index=True)
+                    blob.upload_from_string(updated_df.to_csv(index=False))
             print("Transactions have been uploaded!")
         os.rmdir(spending_dir)
-
-            
