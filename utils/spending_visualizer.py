@@ -4,11 +4,13 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
-import datetime
+import io
 
 
 class SpendingVisualizer:
-    def __init__(self):
+    def __init__(self, storage_client):
+        self.storage_client = storage_client
+
         self.months = {
             "01": "January",
             "02": "February",
@@ -32,20 +34,22 @@ class SpendingVisualizer:
 
     def generate_graph(self, time):
         file = f"{time}.csv"
-        statement_path = f"./spending/{file}"
-        if not os.path.exists(statement_path):
+        blob = self.storage_client.get_blob(file)
+        if not blob.exists():
             print("There are no statements for this time period.")
             return
 
-        transactions = pd.read_csv(statement_path)
+        transactions = pd.read_csv(io.BytesIO(blob.download_as_string()))
         category_totals = transactions.groupby("Category")["Amount"].sum().reset_index()
         category_totals = pd.merge(
             category_totals, self.budget_df, on="Category", how="left"
         )
-        category_totals['Formatted Amount'] = '$' + category_totals['Amount'].round(2).astype(str)
+        category_totals["Formatted Amount"] = "$" + category_totals["Amount"].round(
+            2
+        ).astype(str)
 
         # Create figure
-        total_spent = category_totals['Amount'].sum()
+        total_spent = round(category_totals["Amount"].sum(), 2)
 
         fig = px.bar(
             category_totals,
@@ -53,7 +57,10 @@ class SpendingVisualizer:
             y="Amount",
             title=f"Total Amount Spent For This Month: ${total_spent}",
             color=category_totals["Amount"] < category_totals["Budget"],
-            color_discrete_map={True: "rgba(0, 255, 0, 0.5)", False: "rgba(255, 0, 0, 0.5)"},
+            color_discrete_map={
+                True: "rgba(0, 255, 0, 0.5)",
+                False: "rgba(255, 0, 0, 0.5)",
+            },
             text="Formatted Amount",
         )
 
@@ -68,30 +75,27 @@ class SpendingVisualizer:
         return f"{self.months[month]} {year}"
 
     def generate_graphs(self):
-        dir = "./spending"
-        files = os.listdir(dir)
-        files.sort(reverse=True)
+        blobs = self.storage_client.list_blobs()
+        blobs.sort(key=lambda blob: blob.name, reverse=True)
 
         # Create a subplot for all graphs
-
         fig = make_subplots(
-            rows=len(files),
+            rows=len(blobs),
             cols=1,
-            subplot_titles=[self.get_plot_name(file) for file in files],
+            subplot_titles=[self.get_plot_name(blob.name) for blob in blobs],
         )
 
         row = 1  # Initialize subplot row
 
         # Read all statements
-        for file in files:
-            year, month = file[:7].split("-")
+        for blob in blobs:
+            year, month = blob.name[:7].split("-")
             timeframe = f"{self.months[month]} {year}"
-            statement_path = f"./{dir}/{file}"
-            if not os.path.exists(statement_path):
+            if not blob.exists():
                 print("There are no statements for this time period.")
                 return
 
-            transactions = pd.read_csv(statement_path)
+            transactions = pd.read_csv(io.BytesIO(blob.download_as_string()))
             category_totals = (
                 transactions.groupby("Category")["Amount"].sum().reset_index()
             )
@@ -106,7 +110,7 @@ class SpendingVisualizer:
                 row=row,
                 col=1,
             )
-            
+
             # Set x-axis tickvals and ticktext
             fig.update_xaxes(
                 tickvals=list(range(len(category_totals))),
@@ -124,27 +128,6 @@ class SpendingVisualizer:
         # Show the plot
         fig.show()
 
-    def get_dates_in_between(self, start_date_str, end_date_str):
-        start_month, start_year = map(int, start_date_str.split("-"))
-        end_month, end_year = map(int, end_date_str.split("-"))
-
-        start_date = datetime.date(start_year, start_month, 1)
-        end_date = datetime.date(end_year, end_month, 1)
-
-        dates_between = []
-        current_date = start_date
-        while current_date <= end_date:
-            dates_between.append(current_date.strftime("%Y-%m"))
-            if current_date.month == 12:
-                current_date = datetime.date(current_date.year + 1, 1, 1)
-            else:
-                current_date = datetime.date(
-                    current_date.year, current_date.month + 1, 1
-                )
-
-        return dates_between
-
-    def generate_timerange_graphs(self, start, end):
         dates = self.get_dates_in_between(start, end)
 
         # Create a list of dataframes using list comprehension

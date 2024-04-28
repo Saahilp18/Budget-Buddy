@@ -1,29 +1,43 @@
 from utils.statement_aggregator import StatementAggregator
 from utils.spending_visualizer import SpendingVisualizer
+from utils.storage_client import StorageClient
 import datetime
+import os
+import time
 
-aggregator = StatementAggregator().read_statements()
+storage_client = StorageClient()
 
-visualizer = SpendingVisualizer()
+aggregator = StatementAggregator(storage_client)
+aggregator.read_statements()
+
+visualizer = SpendingVisualizer(storage_client)
+
 
 if __name__ == "__main__":
-    print(
-        """ 
-    1. Show spending for this month
-    2. Show all time spending
-    3. Show spending for a range of months
-    4. Exit
-        """
-    )
     while True:
+        if os.name == 'nt':
+            os.system('cls')
+        # For Unix/Linux/MacOS
+        else:
+            os.system('clear')
+            print(
+            """ 
+Welcome to Budget Buddy!
+
+1. Show spending for this month
+2. Show all time spending
+3. Edit transactions for a month
+4. Exit
+            """
+        )
         choice = int(input("Which would you like?: "))
         if choice == 1:
-            visualizer.generate_graph(datetime.datetime.now().strftime('%Y-%m'))
+            visualizer.generate_graph(datetime.datetime.now().strftime("%Y-%m"))
         if choice == 2:
             visualizer.generate_graphs()
         if choice == 3:
-            time1 = input("Start time (MM-YYYY): ")
-            time2 = input("End Time: ")
-            visualizer.generate_timerange_graphs(time1, time2)
+            date = input("Which transactions would you like to modify? (YYYY-MM): ")
+            storage_client.edit_transactions(date)
         if choice == 4:
             break
+        time.sleep(3)

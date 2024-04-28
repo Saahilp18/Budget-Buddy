@@ -1,3 +1,6 @@
 statements/*
 *.csv
 __pycache__
+secrets.json
+venv
+.vscode

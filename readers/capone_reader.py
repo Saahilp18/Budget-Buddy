@@ -3,21 +3,21 @@ import pandas as pd
 class CaponeReader:
     def __init__(self):
         self.category_mappings = {
-            'Other Services': 'Misc',
+            'Other Services': 'Random Purchases',
             'Payment': 'Payment',
             'Dining': 'Eating Out',
-            'Merchandise': 'Misc',
-            'Internet': 'Housing',
-            'Airfare': 'Travel',
-            'Other Travel': 'Travel',
+            'Merchandise': 'Random Purchases',
+            'Internet': 'Home',
+            'Airfare': 'Random Purchases',
+            'Other Travel': 'Random Purchases',
             'Phone/Cable': 'Phone',
-            'Grocery': 'Grocery',
-            'Gas/Automotive': 'Travel',
+            'Grocery': 'Groceries',
+            'Gas/Automotive': 'Random Purchases',
             'Health Care': 'Personal Health',
             'Healthcare': 'Personal Health',
-            'Entertainment': 'Entertainment',
-            'Lodging': 'Travel',
-            'Fee/Interest Charge': 'Misc'
+            'Entertainment': 'Random Purchases',
+            'Lodging': 'Random Purchases',
+            'Fee/Interest Charge': 'Random Purchases'
         }
     
     def parseTransactions(self, transactions):
