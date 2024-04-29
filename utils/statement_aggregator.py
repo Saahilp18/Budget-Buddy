@@ -3,13 +3,14 @@ import pandas as pd
 from readers.reader_factory import ReaderFactory
 import io
 import json
+from datetime import datetime
 
 
 class StatementAggregator:
     def __init__(self, storage_client):
         self.storage_client = storage_client
         with open("budget.json", "r") as f:
-            self.budget_categories = json.load(f).keys()
+            self.budget_limits = json.load(f)
 
     def read_statements(self):
         dir = "./statements"
@@ -85,18 +86,46 @@ class StatementAggregator:
                         file_path, mode="a", header=False, index=False
                     )
                 else:
+                    curr_date = datetime.now()
+                    static_categories = ["Rent", "401k", "Savings", "Investments"]
+                    time = f"{curr_date.year}-{curr_date.strftime('%m')}-00"
+                    static_df = pd.DataFrame(
+                        [
+                            {
+                                "Transaction Date": time,
+                                "Description": static_cat,
+                                "Category": static_cat,
+                                "Amount": self.budget_limits[static_cat],
+                                "Card": "N/A",
+                            }
+                            for static_cat in static_categories
+                        ]
+                    )
+                    filtered_transactions = pd.concat(
+                        [filtered_transactions, static_df], ignore_index=True
+                    )
                     filtered_transactions.to_csv(file_path, index=False)
 
             os.remove(statement_path)
 
         if os.listdir("./spending"):
+            # Sort transactions by date for readability
+            for file in os.listdir(spending_dir):
+                df = pd.read_csv(spending_dir + "/" + file)
+                df = df.sort_values(
+                    by="Transaction Date",
+                    ascending=True,
+                    ignore_index=True,
+                )
+                df.to_csv(spending_dir + "/" + file, index=False)
+
             print(
                 f"""
 Finished processing statements! Please adjust the transactions in the spending folder before continuing.
 
 Here are the following budget categories:"""
             )
-            for cat in self.budget_categories:
+            for cat in self.budget_limits.keys():
                 print(f"\t{cat}")
             print()
 
@@ -108,7 +137,7 @@ Here are the following budget categories:"""
                     df = pd.read_csv(spending_dir + "/" + file)
                     # Check if there are any unrecognized categories in the data
                     invalid_categories = set(df["Category"]) - set(
-                        self.budget_categories
+                        self.budget_limits.keys()
                     )
                     if invalid_categories:
                         print(
