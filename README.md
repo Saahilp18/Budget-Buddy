@@ -19,7 +19,7 @@ A tool that will allow users to track their spending and habits by regularly upl
 ## How to use:
 1. Download credit/debit card statements
 2. Upload statements to the `./Statements` directory.
-3. Rename statements using the naming conventions listed below in this format: **<bank>-<card_name>**
+3. Rename statements using the naming conventions listed below in this format: \<**bank**\>-\<**card_name**\>
 4. Run the `main.py` script from the `root` directory:
    ```bash
    python main.py
