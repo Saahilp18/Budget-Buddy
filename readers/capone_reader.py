@@ -8,15 +8,15 @@ class CaponeReader:
             'Dining': 'Eating Out',
             'Merchandise': 'Random Purchases',
             'Internet': 'Home',
-            'Airfare': 'Random Purchases',
-            'Other Travel': 'Random Purchases',
+            'Airfare': 'Travel',
+            'Other Travel': 'Travel',
             'Phone/Cable': 'Phone',
             'Grocery': 'Groceries',
-            'Gas/Automotive': 'Random Purchases',
+            'Gas/Automotive': 'Travel',
             'Health Care': 'Personal Health',
             'Healthcare': 'Personal Health',
             'Entertainment': 'Random Purchases',
-            'Lodging': 'Random Purchases',
+            'Lodging': 'Travel',
             'Fee/Interest Charge': 'Random Purchases'
         }
     

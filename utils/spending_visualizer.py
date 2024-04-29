@@ -27,9 +27,9 @@ class SpendingVisualizer:
         }
 
         with open("budget.json", "r") as f:
-            budget_limits = json.load(f)
+            self.budget_limits = json.load(f)
             self.budget_df = pd.DataFrame(
-                list(budget_limits.items()), columns=["Category", "Budget"]
+                list(self.budget_limits.items()), columns=["Category", "Budget"]
             )
 
     def generate_graph(self, time):
@@ -50,17 +50,7 @@ class SpendingVisualizer:
 
         # Create figure
         total_spent = round(category_totals["Amount"].sum(), 2)
-        category_order = [
-            "Eating Out",
-            "Random Purchases",
-            "Groceries",
-            "Personal Health",
-            "Subscriptions",
-            "Rent/Utilities",
-            "Investments",
-            "Savings",
-            "401k",
-        ]
+        category_order = list(self.budget_limits.keys())
         fig = px.bar(
             category_totals,
             x="Category",
@@ -98,6 +88,7 @@ class SpendingVisualizer:
 
         row = 1  # Initialize subplot row
 
+        category_order = list(self.budget_limits.keys())
         # Read all statements
         for blob in blobs:
             year, month = blob.name[:7].split("-")
@@ -125,7 +116,7 @@ class SpendingVisualizer:
             # Set x-axis tickvals and ticktext
             fig.update_xaxes(
                 tickvals=list(range(len(category_totals))),
-                ticktext=category_totals["Category"],
+                ticktext=category_order,
                 row=row,
                 col=1,
             )
@@ -133,32 +124,7 @@ class SpendingVisualizer:
             row += 1  # Move to next subplot row
 
         # Update layout
-        fig.update_layout(title="Spending Analysis", showlegend=False, height=5000)
-        fig.update_yaxes(range=[0, 2000], tickmode="linear", tick0=0, dtick=100)
+        fig.update_layout(title="Spending Analysis", showlegend=False)
 
         # Show the plot
-        fig.show()
-
-        dates = self.get_dates_in_between(start, end)
-
-        # Create a list of dataframes using list comprehension
-        files = [f"spending/{date}.csv" for date in dates]
-        dfs = [pd.read_csv(file) for file in files if os.path.exists(file)]
-
-        # Concatenate all dataframes into a single dataframe
-        combined_df = pd.concat(dfs, ignore_index=True)
-        combined_df = combined_df.sort_values(by="Transaction Date", ascending=False)
-
-        category_totals = combined_df.groupby("Category")["Amount"].sum().reset_index()
-
-        # Plot the bar graph
-        fig = px.bar(
-            category_totals, x="Category", y="Amount", title="Spending by Category"
-        )
-        fig.update_layout(title="Spending Analysis", showlegend=False, height=2000)
-        largest_amount = combined_df["Amount"].max() + 200
-        largest_amount = (largest_amount + 50) // 100 * 100
-        fig.update_yaxes(
-            range=[0, largest_amount], tickmode="linear", tick0=0, dtick=10
-        )
         fig.show()

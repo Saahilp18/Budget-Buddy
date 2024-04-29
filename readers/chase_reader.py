@@ -11,7 +11,7 @@ class ChaseReader:
             'Entertainment': 'Random Purchases',
             'Fees & adjustments': 'Random Purchases',
             'Food & drink': 'Eating Out',
-            'Gas': 'Random Purchases',
+            'Gas': 'Travel',
             'Gifts & donations': 'Random Purchases',
             'Groceries': 'Groceries',
             'Health & wellness': "Personal Health",
@@ -19,7 +19,7 @@ class ChaseReader:
             'Miscellaneous': "Random Purchases",
             'Personal': 'Random Purchases',
             'Professional Services': 'Random Purchases',
-            'Travel': 'Random Purchases'
+            'Travel': 'Travel'
         }
     
     def parseTransactions(self, transactions):

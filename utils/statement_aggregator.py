@@ -13,9 +13,9 @@ class StatementAggregator:
             self.budget_limits = json.load(f)
 
     def read_statements(self):
-        dir = "./statements"
+        dir = "./Statements"
         files = os.listdir(dir)
-        spending_dir = "./spending"
+        spending_dir = "./Spending"
         if not os.path.exists(spending_dir):
             os.mkdir(spending_dir)
         # Read all statements
@@ -80,14 +80,19 @@ class StatementAggregator:
                 filtered_transactions = transactions[
                     transactions["Transaction Date"].str[:7] == date
                 ]
-                file_path = f"./spending/{date}.csv"
+                file_path = f"{spending_dir}/{date}.csv"
                 if os.path.exists(file_path):
                     filtered_transactions.to_csv(
                         file_path, mode="a", header=False, index=False
                     )
                 else:
                     curr_date = datetime.now()
-                    static_categories = ["Rent/Utilities", "401k", "Savings", "Investments"]
+                    static_categories = [
+                        "Rent/Utilities",
+                        "401k",
+                        "Savings",
+                        "Investments",
+                    ]
                     time = f"{curr_date.year}-{curr_date.strftime('%m')}-00"
                     static_df = pd.DataFrame(
                         [
@@ -108,7 +113,7 @@ class StatementAggregator:
 
             os.remove(statement_path)
 
-        if os.listdir("./spending"):
+        if os.listdir(spending_dir):
             # Sort transactions by date for readability
             for file in os.listdir(spending_dir):
                 df = pd.read_csv(spending_dir + "/" + file)
@@ -121,7 +126,7 @@ class StatementAggregator:
 
             print(
                 f"""
-Finished processing statements! Please adjust the transactions in the spending folder before continuing.
+Finished processing statements! Please adjust the transactions in the Spending folder before continuing.
 
 Here are the following budget categories:"""
             )

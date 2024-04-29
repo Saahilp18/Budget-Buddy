@@ -4,16 +4,25 @@ from utils.storage_client import StorageClient
 import datetime
 import os
 import time
-
-storage_client = StorageClient()
-
-aggregator = StatementAggregator(storage_client)
-aggregator.read_statements()
-
-visualizer = SpendingVisualizer(storage_client)
-
+import shutil
 
 if __name__ == "__main__":
+    storage_client = StorageClient()
+
+    aggregator = StatementAggregator(storage_client)
+    aggregator.read_statements()
+
+    visualizer = SpendingVisualizer(storage_client
+                                    )
+    if os.path.exists('./Transactions To Edit'):
+        shutil.rmtree('./Transactions To Edit')
+    if os.path.exists('./Spending'):
+        shutil.rmtree('./Spending')
+
+    statements = os.listdir("./Statements")
+    for file in statements:
+        os.remove(file)
+
     while True:
         if os.name == 'nt':
             os.system('cls')
