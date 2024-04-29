@@ -50,10 +50,9 @@ class SpendingVisualizer:
 
         category_totals = category_totals[(category_totals["Amount"] != 0) & (~category_totals["Amount"].isna())]
 
-        # Create figure
         total_spent = round(category_totals["Amount"].sum(), 2)
         category_order = [cat for cat in self.budget_limits.keys() if cat in category_totals["Category"].unique()]
-        
+
         fig = px.bar(
             category_totals,
             x="Category",
@@ -71,7 +70,6 @@ class SpendingVisualizer:
         fig.update_traces(textposition="outside")
         fig.update_layout(showlegend=False)
 
-        # Show figure
         fig.show()
 
     def get_plot_name(self, file):
@@ -91,7 +89,6 @@ class SpendingVisualizer:
 
         row = 1  # Initialize subplot row
 
-        category_order = list(self.budget_limits.keys())
         # Read all statements
         for blob in blobs:
             year, month = blob.name[:7].split("-")
@@ -104,30 +101,32 @@ class SpendingVisualizer:
             category_totals = (
                 transactions.groupby("Category")["Amount"].sum().reset_index()
             )
+            category_order = [cat for cat in self.budget_limits.keys() if cat in category_totals["Category"].unique()]
 
-            # Add bar trace to subplot
+            category_totals_filtered = category_totals[category_totals["Category"].isin(category_order)]
+
+            # Reorder the filtered DataFrame based on category_order
+            category_totals_filtered = category_totals_filtered.set_index("Category").reindex(category_order).reset_index()
+
             fig.add_trace(
                 go.Bar(
-                    x=category_totals["Category"],
-                    y=category_totals["Amount"],
+                    x=category_totals_filtered["Category"],
+                    y=category_totals_filtered["Amount"],
                     name=timeframe,
                 ),
                 row=row,
                 col=1,
             )
 
-            # Set x-axis tickvals and ticktext
             fig.update_xaxes(
-                tickvals=list(range(len(category_totals))),
-                ticktext=category_order,
+                tickvals=list(range(len(category_totals_filtered))),
+                ticktext=category_totals_filtered["Category"],
                 row=row,
                 col=1,
             )
 
             row += 1  # Move to next subplot row
 
-        # Update layout
         fig.update_layout(title="Spending Analysis", showlegend=False)
 
-        # Show the plot
         fig.show()
