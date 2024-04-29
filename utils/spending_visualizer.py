@@ -48,20 +48,34 @@ class SpendingVisualizer:
             2
         ).astype(str)
 
-        category_totals = category_totals[(category_totals["Amount"] != 0) & (~category_totals["Amount"].isna())]
+        category_totals = category_totals[
+            (category_totals["Amount"] != 0) & (~category_totals["Amount"].isna())
+        ]
 
         total_spent = round(category_totals["Amount"].sum(), 2)
-        category_order = [cat for cat in self.budget_limits.keys() if cat in category_totals["Category"].unique()]
+        category_order = [
+            cat
+            for cat in self.budget_limits.keys()
+            if cat in category_totals["Category"].unique()
+        ]
 
         fig = px.bar(
             category_totals,
             x="Category",
             y="Amount",
             title=f"Total Amount Spent For This Month: ${total_spent}",
-            color=category_totals["Amount"] < category_totals["Budget"] + 1,
+            color=category_totals.apply(
+                lambda row: (
+                    "red"
+                    if row["Amount"] > row["Budget"]
+                    else ("yellow" if row["Amount"] > 0.75 * row["Budget"] else "green")
+                ),
+                axis=1,
+            ),
             color_discrete_map={
-                True: "rgba(0, 255, 0, 0.5)",
-                False: "rgba(255, 0, 0, 0.5)",
+                "green": "rgba(0, 255, 0, 0.5)",
+                "red": "rgba(255, 0, 0, 0.5)",
+                "yellow": "rgba(255, 255, 0, 0.5)",
             },
             text="Formatted Amount",
             category_orders={"Category": category_order},
@@ -101,12 +115,22 @@ class SpendingVisualizer:
             category_totals = (
                 transactions.groupby("Category")["Amount"].sum().reset_index()
             )
-            category_order = [cat for cat in self.budget_limits.keys() if cat in category_totals["Category"].unique()]
+            category_order = [
+                cat
+                for cat in self.budget_limits.keys()
+                if cat in category_totals["Category"].unique()
+            ]
 
-            category_totals_filtered = category_totals[category_totals["Category"].isin(category_order)]
+            category_totals_filtered = category_totals[
+                category_totals["Category"].isin(category_order)
+            ]
 
             # Reorder the filtered DataFrame based on category_order
-            category_totals_filtered = category_totals_filtered.set_index("Category").reindex(category_order).reset_index()
+            category_totals_filtered = (
+                category_totals_filtered.set_index("Category")
+                .reindex(category_order)
+                .reset_index()
+            )
 
             fig.add_trace(
                 go.Bar(
