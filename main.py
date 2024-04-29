@@ -36,8 +36,9 @@ Welcome to Budget Buddy!
         if choice == 2:
             visualizer.generate_graphs()
         if choice == 3:
-            date = input("Which transactions would you like to modify? (YYYY-MM): ")
-            storage_client.edit_transactions(date)
+            date = input("Which transactions would you like to modify? (MM-YYYY): ")
+            month, year = date.split('-')
+            storage_client.edit_transactions(f'{year}-{month}')
         if choice == 4:
             break
         time.sleep(3)
