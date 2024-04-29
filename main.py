@@ -17,10 +17,6 @@ if __name__ == "__main__":
     if os.path.exists('./Spending'):
         shutil.rmtree('./Spending')
 
-    statements = os.listdir("./Statements")
-    for file in statements:
-        os.remove("./Statements/" + file)
-        
     aggregator.read_statements()
     while True:
         if os.name == 'nt':
