@@ -44,7 +44,7 @@ class CaponeReader:
             inplace=True,
         )
 
-        "Normalize the name of the `Debit` column to `Amount`"
+        # Normalize the name of the `Debit` column to `Amount`
         transactions = transactions.rename(columns={"Debit": "Amount"})
 
         return transactions

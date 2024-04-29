@@ -2,7 +2,10 @@ import pandas as pd
 
 
 class DiscoverReader:
+    """This class will be used to read statements from Discover"""
+
     def __init__(self):
+        # Initialize all the category mappings from the bank to this app
         self.category_mappings = {
             "Automotive": "Random Purchases",
             "Department Stores": "Random Purchases",
@@ -27,19 +30,31 @@ class DiscoverReader:
         }
 
     def parseTransactions(self, transactions):
+        """
+        This method takes in a DataFrame of transactions and normalizes the data  by converting categories into standardized types.
+
+        transactions (DataFrame): These are all the transactions from a specific credit card to be uploaded.
+        """
+
+        # Normalize all category names
         transactions["Category"] = transactions["Category"].replace(
             self.category_mappings
         )
+
+        # Drop irrelevant columns
         transactions = transactions.drop(columns=["Post Date"])
+
+        # Drop rows with irrelevant categories
         categories_to_drop = [
             "Payments and Credits",
             "Awards and Rebate Credits",
             "Balance Transfers",
-            "Cash Advances"
+            "Cash Advances",
         ]
-
         mask = transactions["Category"].isin(categories_to_drop)
-
         transactions.drop(transactions[mask].index, inplace=True)
-        transactions = transactions.rename(columns={'Trans. Date': 'Transaction Date'})
+
+        # Normalize the name of the `Trans. Date` column to `Transaction Date`
+        transactions = transactions.rename(columns={"Trans. Date": "Transaction Date"})
+
         return transactions
