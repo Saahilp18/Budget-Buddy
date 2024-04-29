@@ -15,7 +15,7 @@ class DiscoverReader:
             "Restaurants": "Eating Out",
             "Services": "Random Purchases",
             "Supermarkets": "Groceries",
-            "Travel/Entertainment": "Random Purchases",
+            "Travel/ Entertainment": "Random Purchases",
             "Wholesale Clubs": "Groceries",
             "Awards and Rebate Credits": "Awards and Rebate Credits",
             "Balance Transfers": "Balance Transfers",
@@ -30,17 +30,16 @@ class DiscoverReader:
         transactions["Category"] = transactions["Category"].replace(
             self.category_mappings
         )
-        transactions = transactions.drop(columns=["Posted Date"])
-        transactions.drop(
-            transactions[
-                transactions["Category"]
-                in [
-                    "Payments and Credits",
-                    "Awards and Rebate Credits",
-                    "Balance Transfers",
-                    "Cash Advances",
-                ]
-            ].index,
-            inplace=True,
-        )
+        transactions = transactions.drop(columns=["Post Date"])
+        categories_to_drop = [
+            "Payments and Credits",
+            "Awards and Rebate Credits",
+            "Balance Transfers",
+            "Cash Advances"
+        ]
+
+        mask = transactions["Category"].isin(categories_to_drop)
+
+        transactions.drop(transactions[mask].index, inplace=True)
         transactions = transactions.rename(columns={'Trans. Date': 'Transaction Date'})
+        return transactions

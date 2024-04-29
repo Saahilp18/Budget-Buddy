@@ -24,6 +24,11 @@ class StatementAggregator:
             bank, card = file[:-4].split("-")
             transactions = pd.read_csv(statement_path)
 
+            # Parse the transactions
+            transactions = (
+                ReaderFactory().getReader(bank).parseTransactions(transactions)
+            )
+            
             # Convert the Transaction date to datetime and format it correctly
             transactions["Transaction Date"] = pd.to_datetime(
                 transactions["Transaction Date"]
@@ -46,11 +51,6 @@ class StatementAggregator:
                 # if data exists for this date, add it
                 if blob.exists():
                     dfs.append(pd.read_csv(blob.open()))
-
-            # Parse the transactions
-            transactions = (
-                ReaderFactory().getReader(bank).parseTransactions(transactions)
-            )
 
             if dfs:
                 combined_dfs = pd.concat(dfs, ignore_index=True)
