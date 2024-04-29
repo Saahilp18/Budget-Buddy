@@ -5,19 +5,29 @@ import io
 import json
 from datetime import datetime
 
-
 class StatementAggregator:
+    """This class takes in all new credit card statements and merges them together by month"""
+
     def __init__(self, storage_client):
         self.storage_client = storage_client
+
+        # Read the budget limits per category
         with open("budget.json", "r") as f:
             self.budget_limits = json.load(f)
 
     def read_statements(self):
+        """
+        This function will read all the credit card statements, merge them together, and upload them to Google Storage
+        """
+
         dir = "./Statements"
         files = os.listdir(dir)
         spending_dir = "./Spending"
+
+        # Create the directory where the aggregated statements will be stored
         if not os.path.exists(spending_dir):
             os.mkdir(spending_dir)
+
         # Read all statements
         for file in files:
             statement_path = f"./{dir}/{file}"
@@ -34,15 +44,17 @@ class StatementAggregator:
                 transactions["Transaction Date"]
             ).dt.strftime("%Y-%m-%d")
 
+            # Add a column for which credit card the purchase was made on
             transactions["Card"] = card
 
-            # Filter out dates that have already been read
+            # Find all the unique dates in the data
             unique_dates = (
                 pd.to_datetime(transactions["Transaction Date"])
                 .dt.strftime("%Y-%m")
                 .unique()
             )
 
+            # Filter out dates that have already been read
             dfs = []
             # aggregate all relevant dataframes
             for date in unique_dates:
@@ -75,7 +87,7 @@ class StatementAggregator:
                 # Drop the '_merge' column as it's no longer needed
                 transactions.drop(columns="_merge", inplace=True)
 
-            # # Allocate the data to the correct JSON file by year-month
+            # Allocate the data to the correct JSON file by year-month
             for date in unique_dates:
                 filtered_transactions = transactions[
                     transactions["Transaction Date"].str[:7] == date
@@ -86,6 +98,7 @@ class StatementAggregator:
                         file_path, mode="a", header=False, index=False
                     )
                 else:
+                    # If this is the first time creating the file, include the basic expenditures that will be made every month
                     curr_date = datetime.now()
                     static_categories = [
                         "Rent/Utilities",
@@ -109,8 +122,11 @@ class StatementAggregator:
                     filtered_transactions = pd.concat(
                         [filtered_transactions, static_df], ignore_index=True
                     )
+
+                    # Write the filtered transactions to a csv for editing
                     filtered_transactions.to_csv(file_path, index=False)
 
+            # Remove the statement as it is no longer needed
             os.remove(statement_path)
 
         if os.listdir(spending_dir):
@@ -140,10 +156,12 @@ Here are the following budget categories:"""
                 print()
                 for file in os.listdir(spending_dir):
                     df = pd.read_csv(spending_dir + "/" + file)
-                    # Check if there are any unrecognized categories in the data
+                    # Create a set of unrecognized categories in the data
                     invalid_categories = set(df["Category"]) - set(
                         self.budget_limits.keys()
                     )
+
+                    # If unrecognized categories exist, then prompt the user to fix the issue
                     if invalid_categories:
                         print(
                             f"The following categories for {file[:-4]} are invalid. Please revise them:"
@@ -152,11 +170,18 @@ Here are the following budget categories:"""
                             print(f"- {cat}")
                             print()
                         continue
-
+                    
+                    # Remove the file since all its contents have been processed
                     os.remove(spending_dir + "/" + file)
+
+                    # If there are no new transactions to upload, then skip this file
                     if df.empty:
                         continue
+
+                    # Retrieve the Google Cloud Storage blob containing the csv
                     blob = self.storage_client.get_blob(file)
+
+                    # If there is existing data for the relevant month, append to the data. Otherwise, create a new csv
                     existing_df = (
                         pd.read_csv(io.BytesIO(blob.download_as_string()))
                         if blob.exists()
@@ -165,4 +190,6 @@ Here are the following budget categories:"""
                     updated_df = pd.concat([existing_df, df], ignore_index=True)
                     blob.upload_from_string(updated_df.to_csv(index=False))
             print("Transactions have been uploaded!")
+
+        # Remove the Spending directory as it is no longer needed    
         os.rmdir(spending_dir)
