@@ -87,7 +87,7 @@ class StatementAggregator:
                     )
                 else:
                     curr_date = datetime.now()
-                    static_categories = ["Rent", "401k", "Savings", "Investments"]
+                    static_categories = ["Rent/Utilities", "401k", "Savings", "Investments"]
                     time = f"{curr_date.year}-{curr_date.strftime('%m')}-00"
                     static_df = pd.DataFrame(
                         [

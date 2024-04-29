@@ -50,18 +50,29 @@ class SpendingVisualizer:
 
         # Create figure
         total_spent = round(category_totals["Amount"].sum(), 2)
-
+        category_order = [
+            "Eating Out",
+            "Random Purchases",
+            "Groceries",
+            "Personal Health",
+            "Subscriptions",
+            "Rent/Utilities",
+            "Investments",
+            "Savings",
+            "401k",
+        ]
         fig = px.bar(
             category_totals,
             x="Category",
             y="Amount",
             title=f"Total Amount Spent For This Month: ${total_spent}",
-            color=category_totals["Amount"] < category_totals["Budget"],
+            color=category_totals["Amount"] < category_totals["Budget"] + 1,
             color_discrete_map={
                 True: "rgba(0, 255, 0, 0.5)",
                 False: "rgba(255, 0, 0, 0.5)",
             },
             text="Formatted Amount",
+            category_orders={"Category": category_order},
         )
 
         fig.update_traces(textposition="outside")
