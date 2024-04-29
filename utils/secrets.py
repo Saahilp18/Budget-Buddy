@@ -2,8 +2,7 @@ import json
 import os
 
 class Secrets:
-    def __init__(self):
-        pass
+    """This class will be used to read the secrets from the secrets.py file"""
 
     def read_gcp_secrets(self):
         try:
