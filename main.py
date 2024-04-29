@@ -11,13 +11,18 @@ if __name__ == "__main__":
 
     aggregator = StatementAggregator(storage_client)
     visualizer = SpendingVisualizer(storage_client)
+
+    # Clean folders if they exist (They should not at this stage)
     if os.path.exists("./Transactions To Edit"):
         shutil.rmtree("./Transactions To Edit")
     if os.path.exists("./Spending"):
         shutil.rmtree("./Spending")
 
+    # Read statements
     aggregator.read_statements()
+
     while True:
+        # Clear the terminal
         if os.name == "nt":
             os.system("cls")
         else:
@@ -33,14 +38,19 @@ Welcome to Budget Buddy!
             """
             )
         choice = int(input("Which would you like?: "))
+
+        # Show spending for this month
         if choice == 1:
             visualizer.generate_graph(datetime.datetime.now().strftime("%Y-%m"))
+        # Show all time spending
         if choice == 2:
             visualizer.generate_graphs()
+        # Edit transactions for a month
         if choice == 3:
             date = input("Which transactions would you like to modify? (MM-YYYY): ")
             month, year = date.split("-")
             storage_client.edit_transactions(f"{year}-{month}")
+        # Exit
         if choice == 4:
             break
         time.sleep(3)
