@@ -48,9 +48,12 @@ class SpendingVisualizer:
             2
         ).astype(str)
 
+        category_totals = category_totals[(category_totals["Amount"] != 0) & (~category_totals["Amount"].isna())]
+
         # Create figure
         total_spent = round(category_totals["Amount"].sum(), 2)
-        category_order = list(self.budget_limits.keys())
+        category_order = [cat for cat in self.budget_limits.keys() if cat in category_totals["Category"].unique()]
+        
         fig = px.bar(
             category_totals,
             x="Category",
