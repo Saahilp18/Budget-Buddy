@@ -10,8 +10,6 @@ if __name__ == "__main__":
     storage_client = StorageClient()
 
     aggregator = StatementAggregator(storage_client)
-    aggregator.read_statements()
-
     visualizer = SpendingVisualizer(storage_client
                                     )
     if os.path.exists('./Transactions To Edit'):
@@ -21,8 +19,9 @@ if __name__ == "__main__":
 
     statements = os.listdir("./Statements")
     for file in statements:
-        os.remove(file)
-
+        os.remove("./Statements/" + file)
+        
+    aggregator.read_statements()
     while True:
         if os.name == 'nt':
             os.system('cls')
