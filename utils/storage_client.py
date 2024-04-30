@@ -5,6 +5,10 @@ import pandas as pd
 import json
 
 class StorageClient:
+    """
+    This client is used to interact with the Google Cloud Storage service
+    """
+    
     def __init__(self):
         Secrets().read_gcp_secrets()
 
