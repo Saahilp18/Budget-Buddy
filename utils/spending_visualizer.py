@@ -148,7 +148,10 @@ class SpendingVisualizer:
                 transactions.groupby("Category")["Amount"].sum().reset_index()
             )
 
-            # Set the order  of the bars in the bar chart based on the order in budget.json
+            # Hide columns with no spending
+            category_totals = category_totals[category_totals["Amount"] > 0]
+
+            # Set the order of the bars in the bar chart based on the order in budget.json
             category_order = [
                 cat
                 for cat in self.budget_limits.keys()
