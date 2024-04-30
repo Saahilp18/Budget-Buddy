@@ -30,3 +30,4 @@ A tool that will allow users to track their spending and habits by regularly upl
 - Capital One - **capone**
 - Chase - **chase**
 - Discover - **discover**
+- American Express - **amex**
