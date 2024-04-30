@@ -12,12 +12,12 @@ class ChaseReader:
             "Bills & Utilities": "Random Purchases",
             "Education": "Random Purchases",
             "Entertainment": "Random Purchases",
-            "Fees & adjustments": "Random Purchases",
-            "Food & drink": "Eating Out",
+            "Fees & Adjustments": "Random Purchases",
+            "Food & Drink": "Eating Out",
             "Gas": "Travel",
-            "Gifts & donations": "Random Purchases",
+            "Gifts & Donations": "Random Purchases",
             "Groceries": "Groceries",
-            "Health & wellness": "Personal Health",
+            "Health & Wellness": "Personal Health",
             "Home": "Home",
             "Miscellaneous": "Random Purchases",
             "Personal": "Random Purchases",
@@ -37,13 +37,13 @@ class ChaseReader:
             self.category_mappings
         )
 
-        # Drop irrelevant columns
-        transactions = transactions.drop(columns=["Post Date", "Memo", "Type"])
-
         # Drop rows with irrelevant categories
         transactions.drop(
             transactions[transactions["Type"] == "Payment"].index, inplace=True
         )
+
+        # Drop irrelevant columns
+        transactions = transactions.drop(columns=["Post Date", "Memo", "Type"])
 
         # Convert all transactions from negative to positive
         transactions["Amount"] *= -1
