@@ -56,12 +56,12 @@ Welcome to Budget Buddy!
         elif choice == 3:
             visualizer.generate_graphs()
         # Edit transactions for a month
-        elif choice == 3:
+        elif choice == 4:
             date = input("Which transactions would you like to modify? (MM-YYYY): ")
             month, year = date.split("-")
             storage_client.edit_transactions(f"{year}-{month}")
         # Exit
-        elif choice == 4:
+        elif choice == 5:
             break
         else:
             print("That is not a valid option. Please try again.")
