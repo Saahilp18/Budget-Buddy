@@ -5,6 +5,7 @@ import io
 import json
 from datetime import datetime
 
+
 class StatementAggregator:
     """This class takes in all new credit card statements and merges them together by month"""
 
@@ -38,7 +39,7 @@ class StatementAggregator:
             transactions = (
                 ReaderFactory().getReader(bank).parseTransactions(transactions)
             )
-            
+
             # Convert the Transaction date to datetime and format it correctly
             transactions["Transaction Date"] = pd.to_datetime(
                 transactions["Transaction Date"]
@@ -77,7 +78,7 @@ class StatementAggregator:
                 )
                 if not both_present.empty:
                     print(
-                        f"Duplicate transactions that will be omitted for your {card} card:"
+                        f"Here are duplicate transactions that will be omitted for your {card} card:"
                     )
                     print(both_present.to_markdown(index=False))
 
@@ -99,32 +100,32 @@ class StatementAggregator:
                     )
                 else:
                     # If this is the first time creating the file, include the basic expenditures that will be made every month
-                    curr_date = datetime.now()
-                    static_categories = [
-                        "Rent/Utilities",
-                        "401k",
-                        "Savings",
-                        "Investments",
-                    ]
-                    time = f"{curr_date.year}-{curr_date.strftime('%m')}-00"
-                    static_df = pd.DataFrame(
-                        [
-                            {
-                                "Transaction Date": time,
-                                "Description": static_cat,
-                                "Category": static_cat,
-                                "Amount": self.budget_limits[static_cat],
-                                "Card": "N/A",
-                            }
-                            for static_cat in static_categories
+                    if not self.storage_client.get_blob(f"{date}.csv").exists():
+                        static_categories = [
+                            "Rent/Utilities",
+                            "401k",
+                            "Savings",
+                            "Investments",
                         ]
-                    )
-                    filtered_transactions = pd.concat(
-                        [filtered_transactions, static_df], ignore_index=True
-                    )
+                        static_df = pd.DataFrame(
+                            [
+                                {
+                                    "Transaction Date": f"{date}-00",
+                                    "Description": static_cat,
+                                    "Category": static_cat,
+                                    "Amount": self.budget_limits[static_cat],
+                                    "Card": "N/A",
+                                }
+                                for static_cat in static_categories
+                            ]
+                        )
+                        filtered_transactions = pd.concat(
+                            [filtered_transactions, static_df], ignore_index=True
+                        )
 
-                    # Write the filtered transactions to a csv for editing
-                    filtered_transactions.to_csv(file_path, index=False)
+                    # Write the filtered transactions to a csv for editing as long as the df is not empty
+                    if not filtered_transactions.empty:
+                        filtered_transactions.to_csv(file_path, index=False)
 
             # Remove the statement as it is no longer needed
             os.remove(statement_path)
@@ -170,7 +171,7 @@ Here are the following budget categories:"""
                             print(f"- {cat}")
                             print()
                         continue
-                    
+
                     # Remove the file since all its contents have been processed
                     os.remove(spending_dir + "/" + file)
 
@@ -191,5 +192,5 @@ Here are the following budget categories:"""
                     blob.upload_from_string(updated_df.to_csv(index=False))
             print("Transactions have been uploaded!")
 
-        # Remove the Spending directory as it is no longer needed    
+        # Remove the Spending directory as it is no longer needed
         os.rmdir(spending_dir)
