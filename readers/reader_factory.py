@@ -3,12 +3,20 @@ from readers.chase_reader import ChaseReader
 from readers.discover_reader import DiscoverReader
 from readers.amex_reader import AmexReader
 class ReaderFactory:
+    def __init__(self):
+        self.column_order = [
+            'Transaction Date',
+            'Description',
+            'Category',
+            'Amount'
+        ]
+        
     def getReader(self, bank):
         if bank == "capone":
-            return CaponeReader()
+            return CaponeReader(self.column_order)
         if bank == "chase":
-            return ChaseReader()
+            return ChaseReader(self.column_order)
         if bank == "discover":
-            return DiscoverReader()
+            return DiscoverReader(self.column_order)
         if bank == "amex":
-            return AmexReader()
+            return AmexReader(self.column_order)

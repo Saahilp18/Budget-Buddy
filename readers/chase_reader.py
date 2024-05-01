@@ -4,7 +4,10 @@ import pandas as pd
 class ChaseReader:
     """This class will be used to read statements from Chase"""
 
-    def __init__(self):
+    def __init__(self, column_order):
+        self.column_order = column_order
+
+        # Initialize all the category mappings from the bank to this app
         self.category_mappings = {
             "Shopping": "Random Purchases",
             "nan": "Random Purchases",
@@ -48,4 +51,4 @@ class ChaseReader:
         # Convert all transactions from negative to positive
         transactions["Amount"] *= -1
 
-        return transactions
+        return transactions[self.column_order]

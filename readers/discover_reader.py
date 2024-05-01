@@ -4,7 +4,9 @@ import pandas as pd
 class DiscoverReader:
     """This class will be used to read statements from Discover"""
 
-    def __init__(self):
+    def __init__(self, column_order):
+        self.column_order = column_order
+
         # Initialize all the category mappings from the bank to this app
         self.category_mappings = {
             "Automotive": "Random Purchases",
@@ -57,4 +59,4 @@ class DiscoverReader:
         # Normalize the name of the `Trans. Date` column to `Transaction Date`
         transactions = transactions.rename(columns={"Trans. Date": "Transaction Date"})
 
-        return transactions
+        return transactions[self.column_order]

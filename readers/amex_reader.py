@@ -4,7 +4,9 @@ import pandas as pd
 class AmexReader:
     """This class will be used to read statements from American Express"""
 
-    def __init__(self):
+    def __init__(self, column_order):
+        self.column_order = column_order
+        
         # Initialize all the category mappings from the bank to this app
         self.category_mappings = {
             "Restaurant": "Eating Out",
@@ -51,5 +53,5 @@ class AmexReader:
 
         # Normalize the name of the `Date` column to `Transaction Date`
         transactions = transactions.rename(columns={"Date": "Transaction Date"})
-
-        return transactions
+        
+        return transactions[self.column_order]
