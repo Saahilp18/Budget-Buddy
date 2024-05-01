@@ -1,3 +1,5 @@
+# Pull Request Information
+
 | Status | Type
 |---|---
 | Ready/WIP/Blocked | Feature/Bug/Tooling/Refactor/Hotfix
@@ -13,9 +15,9 @@
 Feel free to uncomment this section to include a list of PRs to help track all related work that is being done in the near future / during the sprint.
 This can be especially helpful when you have multiple PRs open at the same time across multiple repositories.
 -->
-# Important Notes
+## Important Notes
 
-# Description
+## Description
 
 <!--
 Describe your PR here!
@@ -28,7 +30,7 @@ The description should include things like:
 You can also optionally include a changelist of all of your changes- this list may be pretty similar to your commit messages but sometimes it's nice (especially as a reviewer) having a curated list of changes that were made.
 -->
 
-# Testing
+## Testing
 
 <!--
 Put here how you tested your changes. It's nice to have this information so:
