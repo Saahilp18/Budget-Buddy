@@ -32,9 +32,10 @@ if __name__ == "__main__":
 Welcome to Budget Buddy!
 
 1. Show spending for this month
-2. Show all time spending
-3. Edit transactions for a month
-4. Exit
+2. Show spending for a previous month
+3. Show all time spending
+4. Edit transactions for a month
+5. Exit
             """
             )
         choice = int(input("Which would you like?: "))
@@ -42,8 +43,13 @@ Welcome to Budget Buddy!
         # Show spending for this month
         if choice == 1:
             visualizer.generate_graph(datetime.datetime.now().strftime("%Y-%m"))
-        # Show all time spending
+        # Show spending for a previous month
         if choice == 2:
+            date = input("Which month would you like to view transactions for? (MM-YYYY): ")
+            month, year = date.split("-")
+            visualizer.generate_graph(f"{year}-{month}")
+        # Show all time spending
+        if choice == 3:
             visualizer.generate_graphs()
         # Edit transactions for a month
         if choice == 3:
