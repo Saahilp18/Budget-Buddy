@@ -23,6 +23,11 @@ class StatementAggregator:
 
         dir = "./Statements"
         files = os.listdir(dir)
+
+        # If the only file in the ./Statements directory is the gitkeep, then stop
+        if '.gitkeep' in files:
+            files.remove('.gitkeep')
+        
         spending_dir = "./Spending"
 
         # Create the directory where the aggregated statements will be stored
