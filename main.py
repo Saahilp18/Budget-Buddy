@@ -30,33 +30,39 @@ if __name__ == "__main__":
             print(
                 """ 
 Welcome to Budget Buddy!
-
+-------------------------
+0. Aggregate statements
 1. Show spending for this month
 2. Show spending for a previous month
 3. Show all time spending
 4. Edit transactions for a month
 5. Exit
+-------------------------
             """
             )
         choice = int(input("Which would you like?: "))
-
+        # Aggregate files
+        if choice == 0:
+            aggregator.read_statements()
         # Show spending for this month
-        if choice == 1:
+        elif choice == 1:
             visualizer.generate_graph(datetime.datetime.now().strftime("%Y-%m"))
         # Show spending for a previous month
-        if choice == 2:
+        elif choice == 2:
             date = input("Which month would you like to view transactions for? (MM-YYYY): ")
             month, year = date.split("-")
             visualizer.generate_graph(f"{year}-{month}")
         # Show all time spending
-        if choice == 3:
+        elif choice == 3:
             visualizer.generate_graphs()
         # Edit transactions for a month
-        if choice == 3:
+        elif choice == 3:
             date = input("Which transactions would you like to modify? (MM-YYYY): ")
             month, year = date.split("-")
             storage_client.edit_transactions(f"{year}-{month}")
         # Exit
-        if choice == 4:
+        elif choice == 4:
             break
+        else:
+            print("That is not a valid option. Please try again.")
         time.sleep(3)
