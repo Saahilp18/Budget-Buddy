@@ -42,6 +42,22 @@ class SpendingVisualizer:
 
         time (String): The specific month and year that we want to visualize
         """
+
+        # Check if the input is valid
+        if ('-' not in time):
+            print("The format for the date should be MM-YYYY.")
+            return
+        month, year = time.split('-')
+        if (
+            not year.isdigit() or
+            len(year) != 4 or
+            not month.isdigit() or
+            len(month) != 2
+        ):
+            print("The format for the date should be MM-YYYY.")
+            return
+        
+        time = f'{year}-{month}'
         file = f"{time}.csv"
         blob = self.storage_client.get_blob(file)
         if not blob.exists():

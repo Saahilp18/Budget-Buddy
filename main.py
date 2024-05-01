@@ -40,28 +40,26 @@ Welcome to Budget Buddy!
 -------------------------
             """
             )
-        choice = int(input("Which would you like?: "))
+        choice = input("Which would you like?: ")
         # Aggregate files
-        if choice == 0:
+        if choice == '0':
             aggregator.read_statements()
         # Show spending for this month
-        elif choice == 1:
-            visualizer.generate_graph(datetime.datetime.now().strftime("%Y-%m"))
+        elif choice == '1':
+            visualizer.generate_graph(datetime.datetime.now().strftime("%m-%Y"))
         # Show spending for a previous month
-        elif choice == 2:
+        elif choice == '2':
             date = input("Which month would you like to view transactions for? (MM-YYYY): ")
-            month, year = date.split("-")
-            visualizer.generate_graph(f"{year}-{month}")
+            visualizer.generate_graph(date)
         # Show all time spending
-        elif choice == 3:
+        elif choice == '3':
             visualizer.generate_graphs()
         # Edit transactions for a month
-        elif choice == 4:
+        elif choice == '4':
             date = input("Which transactions would you like to modify? (MM-YYYY): ")
-            month, year = date.split("-")
-            storage_client.edit_transactions(f"{year}-{month}")
+            storage_client.edit_transactions(date)
         # Exit
-        elif choice == 5:
+        elif choice == '5':
             break
         else:
             print("That is not a valid option. Please try again.")
