@@ -26,8 +26,8 @@ class StorageClient:
         # Retrieve budget values
         with open("budget.json", "r") as f:
             self.budget_categories = json.load(f).keys()
-        file_name = f"{date}.csv"
-
+        month, year = date.split('-')
+        file_name = f"{year}-{month}.csv"
         # Get the specific blob containing the csv
         blob = self.bucket.blob(file_name)
         if not blob.exists():
