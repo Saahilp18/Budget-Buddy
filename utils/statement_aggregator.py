@@ -25,9 +25,9 @@ class StatementAggregator:
         files = os.listdir(dir)
 
         # If the only file in the ./Statements directory is the gitkeep, then stop
-        if '.gitkeep' in files:
-            files.remove('.gitkeep')
-        
+        if ".gitkeep" in files:
+            files.remove(".gitkeep")
+
         spending_dir = "./Spending"
 
         # Create the directory where the aggregated statements will be stored
@@ -72,20 +72,33 @@ class StatementAggregator:
 
             if dfs:
                 combined_dfs = pd.concat(dfs, ignore_index=True)
+
                 # Merge transactions and combined_dfs on all columns
                 merged = pd.merge(
-                    transactions, combined_dfs, how="left", indicator=True
+                    transactions,
+                    combined_dfs[['Transaction Date', 'Description', 'Card', 'Category', 'Amount']],
+                    how="left",
+                    on=["Transaction Date", "Description", "Card"],
+                    suffixes=('_transactions', '_combined_dfs'), 
+                    indicator=True,
                 )
 
-                # Print rows present in both dataframes
-                both_present = merged[merged["_merge"] == "both"].drop(
-                    columns=["_merge", "Card"]
-                )
-                if not both_present.empty:
-                    print(
-                        f"Here are duplicate transactions that will be omitted for your {card} card:"
-                    )
-                    print(both_present.to_markdown(index=False))
+                # Rename merged columns
+                merged = merged.rename(columns={
+                    'Category_transactions': 'Category',
+                    'Amount_transactions': 'Amount'
+                })
+                merged.drop(columns=['Category_combined_dfs', 'Amount_combined_dfs'], inplace=True)
+
+                # # Print rows present in both dataframes
+                # both_present = merged[merged["_merge"] == "both"].drop(
+                #     columns=["_merge", "Card"]
+                # )
+                # if not both_present.empty:
+                #     print(
+                #         f"Here are duplicate transactions that will be omitted for your {card} card:"
+                #     )
+                #     print(both_present.to_markdown(index=False))
 
                 # Filter out rows present in both DataFrames
                 transactions = merged[merged["_merge"] == "left_only"].copy()
