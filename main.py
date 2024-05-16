@@ -6,6 +6,15 @@ import os
 import time
 import shutil
 
+def clear():
+    """
+    Clears the terminal
+    """
+    if os.name == "nt":
+        os.system("cls")
+    else:
+        os.system("clear")
+
 if __name__ == "__main__":
     storage_client = StorageClient()
 
@@ -22,13 +31,10 @@ if __name__ == "__main__":
     aggregator.read_statements()
 
     while True:
-        # Clear the terminal
-        if os.name == "nt":
-            os.system("cls")
-        else:
-            os.system("clear")
-            print(
-                """ 
+        clear()
+        
+        print(
+            """ 
 Welcome to Budget Buddy!
 -------------------------
 0. Aggregate statements
@@ -38,8 +44,9 @@ Welcome to Budget Buddy!
 4. Edit transactions for a month
 5. Exit
 -------------------------
-            """
-            )
+        """
+        )
+
         choice = input("Which would you like?: ")
         # Aggregate files
         if choice == '0':
@@ -63,4 +70,4 @@ Welcome to Budget Buddy!
             break
         else:
             print("That is not a valid option. Please try again.")
-        time.sleep(3)
+        time.sleep(2)
