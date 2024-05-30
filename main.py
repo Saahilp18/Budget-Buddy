@@ -1,10 +1,7 @@
-from utils.statement_aggregator import StatementAggregator
-from utils.spending_visualizer import SpendingVisualizer
-from utils.storage_client import StorageClient
+from utils.core import Core
 import datetime
 import os
 import time
-import shutil
 
 def clear():
     """
@@ -16,19 +13,7 @@ def clear():
         os.system("clear")
 
 if __name__ == "__main__":
-    storage_client = StorageClient()
-
-    aggregator = StatementAggregator(storage_client)
-    visualizer = SpendingVisualizer(storage_client)
-
-    # Clean folders if they exist (They should not at this stage)
-    if os.path.exists("./Transactions To Edit"):
-        shutil.rmtree("./Transactions To Edit")
-    if os.path.exists("./Spending"):
-        shutil.rmtree("./Spending")
-
-    # Read statements
-    aggregator.read_statements()
+    core = Core()
 
     while True:
         clear()
@@ -50,21 +35,21 @@ Welcome to Budget Buddy!
         choice = input("Which would you like?: ")
         # Aggregate files
         if choice == '0':
-            aggregator.read_statements()
+            core.aggregator.read_statements()
         # Show spending for this month
         elif choice == '1':
-            visualizer.generate_graph(datetime.datetime.now().strftime("%m-%Y"))
+            core.visualizer.generate_graph(datetime.datetime.now().strftime("%m-%Y"))
         # Show spending for a previous month
         elif choice == '2':
             date = input("Which month would you like to view transactions for? (MM-YYYY): ")
-            visualizer.generate_graph(date)
+            core.visualizer.generate_graph(date)
         # Show all time spending
         elif choice == '3':
-            visualizer.generate_graphs()
+            core.visualizer.generate_graphs()
         # Edit transactions for a month
         elif choice == '4':
             date = input("Which transactions would you like to modify? (MM-YYYY): ")
-            storage_client.edit_transactions(date)
+            core.storage_client.edit_transactions(date)
         # Exit
         elif choice == '5':
             break
